@@ -1,0 +1,28 @@
+# Credentials & Private Secrets (CRITICAL)
+api.txt
+googlepass.txt
+.env
+*.env
+*.db
+auto_mail.db
+test_auto_mail.db
+
+# Python & Environment
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+env/
+venv/
+
+# Scratch & Temporary data files
+scratch/
+*.xlsx
+*.xls
+*.csv
+!sample_leads.csv
+
+# OS files
+.DS_Store
+Thumbs.db

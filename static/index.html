@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoMail — Intelligent B2B Outreach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --system-bg: #000000;
+      --secondary-bg: #1C1C1E;
+      --tertiary-bg: #2C2C2E;
+      --apple-blue: #0A84FF;
+      --apple-green: #30D158;
+      --apple-indigo: #5E5CE6;
+      --apple-orange: #FF9F0A;
+      --apple-red: #FF453A;
+      --apple-cyan: #64D2FF;
+      --separator: rgba(255, 255, 255, 0.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+      background-color: var(--system-bg);
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Apple Translucent Glass Material */
+    .apple-glass {
+      background: rgba(28, 28, 30, 0.72);
+      backdrop-filter: blur(30px) saturate(190%);
+      -webkit-backdrop-filter: blur(30px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .apple-glass-card {
+      background: rgba(28, 28, 30, 0.60);
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .apple-glass-elevated {
+      background: rgba(44, 44, 46, 0.85);
+      backdrop-filter: blur(35px) saturate(200%);
+      -webkit-backdrop-filter: blur(35px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Apple Button Micro-interactions (Instant response on pointer down) */
+    .apple-btn {
+      transition: transform 120ms cubic-bezier(0.2, 0, 0, 1), background-color 150ms ease, opacity 150ms ease;
+    }
+    .apple-btn:active {
+      transform: scale(0.965);
+    }
+
+    /* Apple macOS Segmented Pill */
+    .segmented-container {
+      background: rgba(118, 118, 128, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 9999px;
+      padding: 3px;
+    }
+
+    .segmented-item {
+      border-radius: 9999px;
+      transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .segmented-active {
+      background: rgba(255, 255, 255, 0.18);
+      color: #FFFFFF;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      font-weight: 590;
+    }
+
+    /* Optical sizing & tracking */
+    .apple-display {
+      letter-spacing: -0.025em;
+    }
+    .apple-subhead {
+      letter-spacing: -0.01em;
+    }
+
+    /* Custom thin scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.28);
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased flex flex-col selection:bg-[#0A84FF]/30">
+
+  <!-- TOP APPLE TRANSLUCENT HEADER -->
+  <header class="apple-glass sticky top-0 z-30 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center space-x-3.5">
+      <!-- Apple Glyph Icon -->
+      <div class="w-9 h-9 rounded-2xl bg-gradient-to-b from-[#0A84FF] to-[#0058BB] flex items-center justify-center shadow-lg shadow-[#0A84FF]/25 border border-white/20">
+        <i data-lucide="send" class="w-4 h-4 text-white"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-sm font-semibold tracking-tight text-white apple-display">AutoMail</h1>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.08] text-white/80 font-medium border border-white/[0.08]">
+            LPU Engine
+          </span>
+        </div>
+        <p class="text-[11px] text-white/50 apple-subhead">Autonomous Cold Outreach Studio</p>
+      </div>
+    </div>
+
+    <!-- QUICK DISPATCH CONTROLS (macOS Action Toolbar) -->
+    <div class="flex items-center space-x-2.5">
+      <!-- Only send approved switch -->
+      <label class="flex items-center space-x-2 text-xs text-white/70 cursor-pointer bg-white/[0.06] hover:bg-white/[0.09] px-3 py-1.5 rounded-full border border-white/[0.08] transition apple-btn">
+        <input type="checkbox" id="check-only-approved" class="rounded border-white/20 text-[#0A84FF] focus:ring-0 accent-[#0A84FF]">
+        <span class="font-medium text-[11px]">Only Send Approved</span>
+      </label>
+
+      <button id="btn-dry-run" onclick="startCampaign(true)" class="apple-btn px-3.5 py-1.5 text-xs font-medium rounded-full bg-white/[0.08] hover:bg-white/[0.14] text-white/90 border border-white/[0.1] flex items-center gap-1.5">
+        <i data-lucide="test-tube-2" class="w-3.5 h-3.5 text-[#FF9F0A]"></i>
+        <span>Simulate</span>
+      </button>
+
+      <button id="btn-start" onclick="startCampaign(false)" class="apple-btn px-4 py-1.5 text-xs font-semibold rounded-full bg-[#0A84FF] hover:bg-[#0071E3] text-white shadow-md shadow-[#0A84FF]/30 border border-white/20 flex items-center gap-1.5">
+        <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+        <span>Start Outreach</span>
+      </button>
+
+      <button id="btn-pause" onclick="pauseCampaign()" class="hidden apple-btn px-3.5 py-1.5 text-xs font-semibold rounded-full bg-[#FF9F0A] hover:bg-[#E08A05] text-black flex items-center gap-1.5">
+        <i data-lucide="pause" class="w-3.5 h-3.5"></i>
+        <span id="pause-btn-text">Pause</span>
+      </button>
+
+      <button id="btn-stop" onclick="stopCampaign()" class="hidden apple-btn px-3.5 py-1.5 text-xs font-semibold rounded-full bg-[#FF453A] hover:bg-[#E0382E] text-white flex items-center gap-1.5">
+        <i data-lucide="square" class="w-3.5 h-3.5"></i>
+        <span>Stop</span>
+      </button>
+
+      <!-- Account Setup / Friend Connect Button -->
+      <button onclick="openAccountModal()" class="apple-btn px-3 py-1.5 text-xs font-medium rounded-full bg-white/[0.08] hover:bg-white/[0.14] text-white/90 border border-white/[0.1] flex items-center gap-1.5" title="Configure your own Gmail, App Password, and Groq API Key">
+        <i data-lucide="user-cog" class="w-3.5 h-3.5 text-[#0A84FF]"></i>
+        <span>Account & Keys</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- LIVE CAMPAIGN STATUS BANNER (Dynamic Glass Ticker) -->
+  <div id="live-banner" class="bg-[#1C1C1E]/60 border-b border-white/[0.06] backdrop-blur-xl px-6 py-2.5 flex items-center justify-between text-xs transition-all">
+    <div class="flex items-center space-x-3">
+      <span class="relative flex h-2 w-2">
+        <span id="ping-indicator" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#30D158] opacity-75"></span>
+        <span id="status-indicator" class="relative inline-flex rounded-full h-2 w-2 bg-[#30D158]"></span>
+      </span>
+      <span id="campaign-status-text" class="font-medium text-white/80 apple-subhead">System Ready. Mailbox configured.</span>
+    </div>
+    <div class="flex items-center space-x-3.5">
+      <div id="countdown-badge" class="hidden px-2 py-0.5 rounded-full bg-[#0A84FF]/20 text-[#64D2FF] font-mono text-[10px] border border-[#0A84FF]/30">
+        Anti-Spam Delay: <span id="countdown-val">0</span>s
+      </div>
+      <div class="w-32 bg-white/[0.1] rounded-full h-1.5 overflow-hidden">
+        <div id="live-progress-bar" class="bg-[#0A84FF] h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+      <span id="live-progress-pct" class="font-mono text-white/40 text-[11px]">0%</span>
+    </div>
+  </div>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+
+    <!-- KPI WIDGETS (iOS Widget Grid Architecture) -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+      
+      <!-- Total -->
+      <div class="apple-glass-card rounded-2xl p-4 transition duration-200 hover:border-white/20">
+        <div class="flex items-center justify-between text-white/50 text-[11px] font-medium">
+          <span>Total Leads</span>
+          <i data-lucide="users" class="w-3.5 h-3.5 text-[#0A84FF]"></i>
+        </div>
+        <div id="stat-total" class="text-2xl font-bold text-white mt-1.5 apple-display">0</div>
+        <div class="text-[10px] text-white/40 mt-0.5">Database count</div>
+      </div>
+
+      <!-- Pending -->
+      <div class="apple-glass-card rounded-2xl p-4 transition duration-200 hover:border-white/20">
+        <div class="flex items-center justify-between text-white/50 text-[11px] font-medium">
+          <span>Pending</span>
+          <i data-lucide="clock" class="w-3.5 h-3.5 text-[#FF9F0A]"></i>
+        </div>
+        <div id="stat-pending" class="text-2xl font-bold text-[#FF9F0A] mt-1.5 apple-display">0</div>
+        <div class="text-[10px] text-white/40 mt-0.5">Awaiting AI</div>
+      </div>
+
+      <!-- AI Ready -->
+      <div class="apple-glass-card rounded-2xl p-4 transition duration-200 hover:border-white/20">
+        <div class="flex items-center justify-between text-white/50 text-[11px] font-medium">
+          <span>AI Ready</span>
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#BF5AF2]"></i>
+        </div>
+        <div id="stat-generated" class="text-2xl font-bold text-[#BF5AF2] mt-1.5 apple-display">0</div>
+        <div class="text-[10px] text-white/40 mt-0.5">Drafts ready</div>
+      </div>
+
+      <!-- Approved -->
+      <div class="apple-glass-card rounded-2xl p-4 transition duration-200 hover:border-white/20">
+        <div class="flex items-center justify-between text-white/50 text-[11px] font-medium">
+          <span>Approved</span>
+          <i data-lucide="check-square" class="w-3.5 h-3.5 text-[#64D2FF]"></i>
+        </div>
+        <div id="stat-approved" class="text-2xl font-bold text-[#64D2FF] mt-1.5 apple-display">0</div>
+        <div class="text-[10px] text-white/40 mt-0.5">Ready to send</div>
+      </div>
+
+      <!-- Delivered -->
+      <div class="apple-glass-card rounded-2xl p-4 transition duration-200 hover:border-white/20">
+        <div class="flex items-center justify-between text-white/50 text-[11px] font-medium">
+          <span>Delivered</span>
+          <i data-lucide="check-circle" class="w-3.5 h-3.5 text-[#30D158]"></i>
+        </div>
+        <div id="stat-sent" class="text-2xl font-bold text-[#30D158] mt-1.5 apple-display">0</div>
+        <div class="text-[10px] text-white/40 mt-0.5">Sent successfully</div>
+      </div>
+
+      <!-- Failed -->
+      <div class="apple-glass-card rounded-2xl p-4 transition duration-200 hover:border-white/20">
+        <div class="flex items-center justify-between text-white/50 text-[11px] font-medium">
+          <span>Bounced</span>
+          <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-[#FF453A]"></i>
+        </div>
+        <div id="stat-failed" class="text-2xl font-bold text-[#FF453A] mt-1.5 apple-display">0</div>
+        <div class="text-[10px] text-white/40 mt-0.5">Delivery errors</div>
+      </div>
+    </div>
+
+    <!-- APPLE LIVE HEALTH & RATE LIMIT BAR (Hardware/Diagnostic Style) -->
+    <div class="apple-glass-card rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-3.5">
+        <div class="w-8 h-8 rounded-xl bg-[#30D158]/15 border border-[#30D158]/30 flex items-center justify-center text-[#30D158]">
+          <i data-lucide="zap" class="w-4 h-4 fill-current"></i>
+        </div>
+        <div>
+          <div class="text-xs font-semibold text-white flex items-center gap-2">
+            <span>Groq LPU Rate Limit & Quota</span>
+            <span id="api-status-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#30D158]/20 text-[#30D158] border border-[#30D158]/30">Active</span>
+          </div>
+          <div class="text-[11px] text-white/50 apple-subhead" id="api-model-name">openai/gpt-oss-120b (120B Flagship Model)</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-6 w-full md:w-auto text-xs">
+        <!-- Request Meter -->
+        <div class="flex-1 md:w-48">
+          <div class="flex justify-between text-[11px] text-white/70 mb-1">
+            <span>Calls: <strong id="api-req-rem" class="text-white font-medium">999</strong> / <span id="api-req-lim">1000</span></span>
+            <span class="text-white/40 text-[10px]" id="api-req-reset">1m reset</span>
+          </div>
+          <div class="w-full bg-white/[0.08] rounded-full h-1.5 overflow-hidden">
+            <div id="api-req-bar" class="bg-[#30D158] h-1.5 rounded-full" style="width: 100%"></div>
+          </div>
+        </div>
+
+        <!-- Token Meter -->
+        <div class="flex-1 md:w-48">
+          <div class="flex justify-between text-[11px] text-white/70 mb-1">
+            <span>Tokens: <strong id="api-tok-rem" class="text-white font-medium">7586</strong> / <span id="api-tok-lim">8000</span></span>
+            <span class="text-white/40 text-[10px]" id="api-tok-reset">3s reset</span>
+          </div>
+          <div class="w-full bg-white/[0.08] rounded-full h-1.5 overflow-hidden">
+            <div id="api-tok-bar" class="bg-[#0A84FF] h-1.5 rounded-full" style="width: 95%"></div>
+          </div>
+        </div>
+
+        <button onclick="fetchGroqLimits(true)" class="apple-btn p-1.5 rounded-full bg-white/[0.08] hover:bg-white/[0.15] text-white/80 transition" title="Refresh Live Quota">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- macOS STYLE SEGMENTED NAVIGATION -->
+    <div class="flex justify-center sm:justify-start">
+      <div class="segmented-container flex space-x-1 text-xs">
+        <button onclick="switchTab('leads')" id="tab-btn-leads" class="segmented-item segmented-active px-4 py-1.5 flex items-center gap-1.5">
+          <i data-lucide="list" class="w-3.5 h-3.5"></i> Leads & Import
+        </button>
+        <button onclick="switchTab('ai')" id="tab-btn-ai" class="segmented-item px-4 py-1.5 text-white/60 hover:text-white flex items-center gap-1.5">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#BF5AF2]"></i> AI Personalization
+        </button>
+        <button onclick="switchTab('smtp')" id="tab-btn-smtp" class="segmented-item px-4 py-1.5 text-white/60 hover:text-white flex items-center gap-1.5">
+          <i data-lucide="mail" class="w-3.5 h-3.5 text-[#0A84FF]"></i> Mailbox & Safety
+        </button>
+        <button onclick="switchTab('settings')" id="tab-btn-settings" class="segmented-item px-4 py-1.5 text-white/60 hover:text-white flex items-center gap-1.5">
+          <i data-lucide="sliders" class="w-3.5 h-3.5 text-white/50"></i> Agency Profile
+        </button>
+        <button onclick="switchTab('logs')" id="tab-btn-logs" class="segmented-item px-4 py-1.5 text-white/60 hover:text-white flex items-center gap-1.5">
+          <i data-lucide="terminal" class="w-3.5 h-3.5 text-[#30D158]"></i> Logs
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 1: LEADS & UPLOAD -->
+    <section id="tab-leads" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- File Dropzone (CSV & Excel) -->
+        <div class="md:col-span-2 apple-glass-card rounded-2xl p-6 text-center transition cursor-pointer hover:border-[#0A84FF]/50 flex flex-col items-center justify-center relative border-dashed" id="dropzone">
+          <input type="file" id="file-input" accept=".csv, .xlsx, .xls" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onchange="handleFileSelect(event)">
+          <div class="w-12 h-12 rounded-2xl bg-[#0A84FF]/10 flex items-center justify-center text-[#0A84FF] mb-2.5">
+            <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+          </div>
+          <p class="text-sm font-semibold text-white apple-display">Import Leads Spreadsheet</p>
+          <p class="text-xs text-white/40 mt-1">Drop CSV or Excel (.xlsx / .xls) with instant column mapping & preview</p>
+        </div>
+
+        <!-- Quick Batch Actions -->
+        <div class="apple-glass-card rounded-2xl p-5 flex flex-col justify-between space-y-3">
+          <div>
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-white/40">Campaign Controls</h3>
+            <p class="text-xs text-white/50 mt-1">Generate AI copy or approve verified drafts.</p>
+          </div>
+          <div class="flex flex-col gap-2">
+            <button onclick="batchGenerateAI()" class="apple-btn w-full px-3 py-2 text-xs font-semibold rounded-xl bg-gradient-to-r from-[#5E5CE6] to-[#BF5AF2] hover:brightness-110 text-white flex items-center justify-center gap-2 shadow-md shadow-[#5E5CE6]/25">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              <span>Batch AI Personalize (Groq)</span>
+            </button>
+            <button onclick="approveAllGenerated()" class="apple-btn w-full px-3 py-1.5 text-xs font-medium rounded-xl bg-[#64D2FF]/10 hover:bg-[#64D2FF]/20 text-[#64D2FF] border border-[#64D2FF]/25 flex items-center justify-center gap-1.5">
+              <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+              <span>Approve All Generated</span>
+            </button>
+            <div class="flex gap-2">
+              <a href="/api/export" class="apple-btn flex-1 px-3 py-1.5 text-xs font-medium rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-white/80 text-center flex items-center justify-center gap-1">
+                <i data-lucide="download" class="w-3 h-3"></i> Export
+              </a>
+              <button onclick="resetStatuses()" class="apple-btn flex-1 px-3 py-1.5 text-xs font-medium rounded-xl bg-white/[0.08] hover:bg-white/[0.14] text-white/80 flex items-center justify-center gap-1">
+                <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Reset
+              </button>
+              <button onclick="clearAllLeads()" class="apple-btn px-3 py-1.5 text-xs font-medium rounded-xl bg-[#FF453A]/15 hover:bg-[#FF453A]/25 text-[#FF453A] border border-[#FF453A]/20">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters & Search Toolbar -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+        <div class="segmented-container flex items-center space-x-1 text-xs">
+          <button onclick="filterLeads('all')" id="filter-all" class="segmented-item segmented-active px-3 py-1 text-xs">All</button>
+          <button onclick="filterLeads('pending')" id="filter-pending" class="segmented-item px-3 py-1 text-xs text-white/50 hover:text-white">Pending</button>
+          <button onclick="filterLeads('generated')" id="filter-generated" class="segmented-item px-3 py-1 text-xs text-white/50 hover:text-white">AI Ready</button>
+          <button onclick="filterLeads('approved')" id="filter-approved" class="segmented-item px-3 py-1 text-xs text-white/50 hover:text-white">Approved</button>
+          <button onclick="filterLeads('sent')" id="filter-sent" class="segmented-item px-3 py-1 text-xs text-white/50 hover:text-white">Delivered</button>
+          <button onclick="filterLeads('failed')" id="filter-failed" class="segmented-item px-3 py-1 text-xs text-white/50 hover:text-white">Failed</button>
+        </div>
+
+        <div class="relative w-full sm:w-64">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-white/40 absolute left-3 top-2.5"></i>
+          <input type="text" id="lead-search" placeholder="Search company, name, email..." oninput="searchLeads(event)" class="w-full bg-[#1C1C1E] border border-white/[0.08] rounded-full pl-8 pr-3 py-1.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#0A84FF]">
+        </div>
+      </div>
+
+      <!-- Leads Table (macOS Mail/Finder Style) -->
+      <div class="apple-glass-card rounded-2xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-white/[0.03] border-b border-white/[0.08] text-white/50 font-medium">
+              <tr>
+                <th class="py-3 px-4">Contact & Company</th>
+                <th class="py-3 px-4">Role & Context</th>
+                <th class="py-3 px-4">Email</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4">Personalized Email</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leads-tbody" class="divide-y divide-white/[0.05] text-white/80">
+              <tr>
+                <td colspan="6" class="py-10 text-center text-white/40">
+                  No leads in database. Upload your CSV or Excel file above to begin!
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: AI PERSONALIZATION -->
+    <section id="tab-ai" class="hidden space-y-6">
+      <div class="apple-glass-card rounded-2xl p-6 space-y-4">
+        <div>
+          <h2 class="text-base font-semibold text-white flex items-center gap-2 apple-display">
+            <i data-lucide="sparkles" class="w-4 h-4 text-[#BF5AF2]"></i> Automation Agency AI Intelligence
+          </h2>
+          <p class="text-xs text-white/50 mt-1 apple-subhead">
+            Powered by <strong>Groq LPU Ultra-fast inference</strong> with high free-tier limits. Analyzes company context and role pain points to generate concise, high-converting B2B cold emails.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-white/70 mb-1">AI Provider</label>
+            <select id="ai-provider-select" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:border-[#0A84FF] focus:outline-none">
+              <option value="groq" selected>Groq (Ultra-Fast & High Limits)</option>
+              <option value="gemini">Google Gemini (Free Tier)</option>
+              <option value="spintax">Smart Spintax Templates (Offline / 0 Keys)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-white/70 mb-1">Groq Model</label>
+            <select id="groq-model-select" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:border-[#0A84FF] focus:outline-none">
+              <option value="openai/gpt-oss-120b" selected>openai/gpt-oss-120b (Flagship 120B - Best Quality)</option>
+              <option value="openai/gpt-oss-20b">openai/gpt-oss-20b (Lightweight & Rapid)</option>
+              <option value="qwen/qwen3.8-27b">qwen/qwen3.8-27b (27B Versatile)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-white/70 mb-1">Agency Brand Name</label>
+            <input type="text" id="ai-agency-name" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:border-[#0A84FF] focus:outline-none" placeholder="e.g. Benedict | Automation Studio">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-white/70 mb-1">Sender Signature Name</label>
+            <input type="text" id="ai-sender-name" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:border-[#0A84FF] focus:outline-none" placeholder="e.g. Benedict Tech">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-white/70 mb-1">Core Pitch & Target Outcome</label>
+            <input type="text" id="ai-custom-prompt" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:border-[#0A84FF] focus:outline-none" placeholder="Save 15+ hours a week by automating manual data entry and repetitive workflows.">
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-2">
+          <button onclick="saveAISettings()" class="apple-btn px-4 py-2 text-xs font-semibold rounded-full bg-[#0A84FF] hover:bg-[#0071E3] text-white flex items-center gap-1.5 shadow-md shadow-[#0A84FF]/25">
+            <i data-lucide="save" class="w-3.5 h-3.5"></i>
+            <span>Save AI Profile</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Sandbox Test -->
+      <div class="apple-glass-card rounded-2xl p-6 space-y-4">
+        <h3 class="text-sm font-semibold text-white apple-display">Live AI Test Generation Sandbox</h3>
+        <p class="text-xs text-white/50">Generate and preview how Groq writes an email for the first lead in your list.</p>
+
+        <div class="flex gap-2">
+          <button onclick="runTestAIGeneration()" class="apple-btn px-4 py-2 text-xs font-semibold rounded-full bg-gradient-to-r from-[#5E5CE6] to-[#BF5AF2] hover:brightness-110 text-white flex items-center gap-1.5 shadow-md shadow-[#5E5CE6]/25">
+            <i data-lucide="play" class="w-3.5 h-3.5"></i>
+            <span>Generate Sample Cold Email</span>
+          </button>
+        </div>
+
+        <div id="ai-preview-box" class="hidden apple-glass-elevated rounded-2xl p-5 space-y-3">
+          <div class="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
+            <div class="text-xs font-medium text-white/70">
+              Subject: <span id="preview-subject" class="text-white font-semibold"></span>
+            </div>
+            <span id="preview-source" class="text-[10px] px-2 py-0.5 rounded-full bg-[#BF5AF2]/20 text-[#BF5AF2] font-mono border border-[#BF5AF2]/30"></span>
+          </div>
+          <div id="preview-hook" class="text-xs text-[#FFD60A] bg-[#FFD60A]/10 p-2.5 rounded-xl border border-[#FFD60A]/20"></div>
+          <div id="preview-body" class="text-xs text-white/90 whitespace-pre-line leading-relaxed font-sans bg-black/40 p-4 rounded-xl border border-white/[0.06]"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: MAILER & DELIVERABILITY -->
+    <section id="tab-smtp" class="hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- SMTP Credentials -->
+        <div class="md:col-span-2 apple-glass-card rounded-2xl p-6 space-y-4">
+          <div>
+            <h2 class="text-base font-semibold text-white flex items-center gap-2 apple-display">
+              <i data-lucide="mail" class="w-4 h-4 text-[#0A84FF]"></i> Mailbox & SMTP Authentication
+            </h2>
+            <p class="text-xs text-white/50 mt-1 apple-subhead">
+              Configured with your Google App Password for <strong>benedictworktech@gmail.com</strong>.
+            </p>
+          </div>
+
+          <!-- Quick presets -->
+          <div class="flex gap-2 text-xs">
+            <button type="button" onclick="applyPreset('gmail')" class="apple-btn px-3 py-1 rounded-full bg-white/[0.08] hover:bg-white/[0.14] text-white/80 border border-white/[0.08]">Preset: Gmail</button>
+            <button type="button" onclick="applyPreset('outlook')" class="apple-btn px-3 py-1 rounded-full bg-white/[0.08] hover:bg-white/[0.14] text-white/80 border border-white/[0.08]">Preset: Outlook 365</button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-white/70 mb-1">SMTP Host</label>
+              <input type="text" id="smtp-host" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:border-[#0A84FF] focus:outline-none" placeholder="smtp.gmail.com">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-white/70 mb-1">SMTP Port</label>
+              <input type="text" id="smtp-port" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:border-[#0A84FF] focus:outline-none" placeholder="587">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-white/70 mb-1">SMTP Username / Email</label>
+              <input type="text" id="smtp-user" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:border-[#0A84FF] focus:outline-none" placeholder="benedictworktech@gmail.com">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-white/70 mb-1">Google App Password</label>
+              <input type="password" id="smtp-password" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:border-[#0A84FF] focus:outline-none" placeholder="••••••••••••">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-white/70 mb-1">From Name</label>
+              <input type="text" id="from-name" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:border-[#0A84FF] focus:outline-none" placeholder="Benedict | Automation Studio">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-white/70 mb-1">Reply-To Address (Optional)</label>
+              <input type="text" id="reply-to" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:border-[#0A84FF] focus:outline-none" placeholder="Leave blank to match sender">
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-2">
+            <button onclick="testSMTPConnection()" class="apple-btn px-3.5 py-1.5 text-xs font-medium rounded-full bg-white/[0.08] hover:bg-white/[0.15] text-white flex items-center gap-1.5 border border-white/[0.08]">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-[#30D158]"></i>
+              <span>Test SMTP Login</span>
+            </button>
+            <button onclick="saveSMTPSettings()" class="apple-btn px-4 py-1.5 text-xs font-semibold rounded-full bg-[#0A84FF] hover:bg-[#0071E3] text-white flex items-center gap-1.5 shadow-md shadow-[#0A84FF]/25">
+              <i data-lucide="save" class="w-3.5 h-3.5"></i>
+              <span>Save Mailbox</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Deliverability Guardrails & Test Send -->
+        <div class="space-y-4">
+          <!-- Safety Sliders -->
+          <div class="apple-glass-card rounded-2xl p-5 space-y-4">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-white/40 flex items-center gap-1.5">
+              <i data-lucide="shield-check" class="w-4 h-4 text-[#30D158]"></i> Anti-Spam Throttling
+            </h3>
+            <p class="text-xs text-white/50">
+              Randomized delays mimic natural human cadence, keeping your mailbox healthy.
+            </p>
+
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs text-white/70 mb-1">
+                  <span>Min: <strong id="val-delay-min">35</strong>s</span>
+                  <span>Max: <strong id="val-delay-max">75</strong>s</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <input type="number" id="input-delay-min" min="10" max="300" class="bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-2.5 py-1.5 text-xs text-white" value="35">
+                  <input type="number" id="input-delay-max" min="15" max="600" class="bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-2.5 py-1.5 text-xs text-white" value="75">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs text-white/70 mb-1">Daily Send Cap (Safety Limit)</label>
+                <input type="number" id="input-daily-limit" min="5" max="500" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-2.5 py-1.5 text-xs text-white" value="40">
+                <span class="text-[10px] text-white/40 mt-1 block">Recommended: 30-50/day per cold mailbox.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test Send Verification Box -->
+          <div class="apple-glass-card rounded-2xl p-5 space-y-3">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-white/40 flex items-center gap-1.5">
+              <i data-lucide="send" class="w-4 h-4 text-[#0A84FF]"></i> Send Test Verification Email
+            </h3>
+            <p class="text-xs text-white/50">Send 1 real test email to confirm mailbox health.</p>
+            <div class="flex gap-2">
+              <input type="email" id="test-target-email" value="dharshansai04@gmail.com" class="flex-1 bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#0A84FF]">
+              <button onclick="sendTestEmail()" class="apple-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-[#30D158] hover:bg-[#28B84D] text-black">
+                <span>Send</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 4: SETTINGS & API KEYS -->
+    <section id="tab-settings" class="hidden space-y-6">
+      <div class="max-w-2xl apple-glass-card rounded-2xl p-6 space-y-4">
+        <div>
+          <h2 class="text-base font-semibold text-white flex items-center gap-2 apple-display">
+            <i data-lucide="key" class="w-4 h-4 text-[#FF9F0A]"></i> AI API Keys & Configuration
+          </h2>
+          <p class="text-xs text-white/50 mt-1 apple-subhead">
+            Configure your free Groq and Gemini API keys. All keys are encrypted and stored locally in your SQLite database.
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-medium text-white/70">
+                Groq API Key (High Rate Limits & 120B Model)
+              </label>
+              <span class="text-[10px] text-[#30D158] font-mono">1,000 req limit active</span>
+            </div>
+            <input type="password" id="groq-api-key" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:border-[#0A84FF] focus:outline-none" placeholder="gsk_...">
+            <p class="text-[10px] text-white/40 mt-1">
+              Ultra-fast LPU inference. Free keys available at <a href="https://console.groq.com/keys" target="_blank" class="text-[#0A84FF] underline">console.groq.com/keys</a>.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-white/70 mb-1">
+              Google Gemini API Key (Optional Backup)
+            </label>
+            <input type="password" id="gemini-api-key" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:border-[#0A84FF] focus:outline-none" placeholder="AIzaSy...">
+            <p class="text-[10px] text-white/40 mt-1">
+              Optional secondary fallback from <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[#0A84FF] underline">Google AI Studio</a>.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-2">
+          <button onclick="saveAllSettings()" class="apple-btn px-4 py-2 text-xs font-semibold rounded-full bg-[#0A84FF] hover:bg-[#0071E3] text-white flex items-center gap-1.5 shadow-md shadow-[#0A84FF]/25">
+            <i data-lucide="save" class="w-3.5 h-3.5"></i>
+            <span>Save Settings</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: ACTIVITY LOGS -->
+    <section id="tab-logs" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-semibold text-white flex items-center gap-2 apple-display">
+            <i data-lucide="terminal" class="w-4 h-4 text-[#30D158]"></i> Real-time Activity Feed
+          </h2>
+          <p class="text-xs text-white/50 apple-subhead">Live audit of imports, AI generations, throttle countdowns, and sends.</p>
+        </div>
+        <button onclick="fetchLogs()" class="apple-btn px-3 py-1.5 text-xs font-medium rounded-full bg-white/[0.08] hover:bg-white/[0.14] text-white/80 border border-white/[0.08] flex items-center gap-1.5">
+          <i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh
+        </button>
+      </div>
+
+      <div class="apple-glass-card rounded-2xl p-4 font-mono text-xs max-h-[500px] overflow-y-auto space-y-2" id="logs-container">
+        <div class="text-white/40">Loading activity logs...</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FILE IMPORT & MAPPING PREVIEW MODAL (macOS Sheet Style) -->
+  <div id="import-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="apple-glass-elevated rounded-3xl max-w-4xl w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+        <div>
+          <h3 class="text-sm font-bold text-white flex items-center gap-2 apple-display">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-[#0A84FF]"></i>
+            <span>Import & Column Mapping Preview</span>
+          </h3>
+          <p id="import-file-details" class="text-xs text-white/50">Filename • 0 rows found</p>
+        </div>
+        <button onclick="closeImportModal()" class="apple-btn text-white/50 hover:text-white p-1 rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Column Mapping Selectors -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white/[0.03] p-4 rounded-2xl border border-white/[0.06]">
+        <div>
+          <label class="block text-[11px] font-medium text-white/70 mb-1">Email Column (Required)</label>
+          <select id="map-email" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-2.5 py-1.5 text-xs text-white"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-white/70 mb-1">First Name Column</label>
+          <select id="map-first-name" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-2.5 py-1.5 text-xs text-white"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-white/70 mb-1">Company Column</label>
+          <select id="map-company" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-2.5 py-1.5 text-xs text-white"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-white/70 mb-1">Job Title Column</label>
+          <select id="map-job-title" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-2.5 py-1.5 text-xs text-white"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-white/70 mb-1">Website Column</label>
+          <select id="map-website" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-2.5 py-1.5 text-xs text-white"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-white/70 mb-1">Notes / Context Column</label>
+          <select id="map-notes" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-2.5 py-1.5 text-xs text-white"></select>
+        </div>
+      </div>
+
+      <!-- Live Top 5 Rows Data Preview Table -->
+      <div>
+        <h4 class="text-xs font-semibold text-white/70 mb-2 apple-display">Top 5 Rows Preview from Your File:</h4>
+        <div class="overflow-x-auto max-h-48 border border-white/[0.08] rounded-2xl bg-black/40">
+          <table class="w-full text-left text-[11px]" id="import-preview-table">
+            <thead id="import-preview-thead" class="bg-white/[0.04] border-b border-white/[0.08] text-white/50 font-medium"></thead>
+            <tbody id="import-preview-tbody" class="divide-y divide-white/[0.05] text-white/80"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-white/[0.08]">
+        <button onclick="closeImportModal()" class="apple-btn px-4 py-2 text-xs font-medium rounded-full bg-white/[0.08] hover:bg-white/[0.15] text-white/80 transition">Cancel</button>
+        <button onclick="confirmImport()" class="apple-btn px-5 py-2 text-xs font-semibold rounded-full bg-[#0A84FF] hover:bg-[#0071E3] text-white transition flex items-center gap-1.5 shadow-lg shadow-[#0A84FF]/25">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Confirm & Import Leads</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEAD DETAIL & EMAIL PREVIEW MODAL (iOS Sheet Architecture) -->
+  <div id="lead-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="apple-glass-elevated rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+        <div>
+          <h3 class="text-sm font-bold text-white flex items-center gap-2 apple-display">
+            <span id="modal-lead-name">Contact</span> • <span id="modal-lead-company" class="text-[#0A84FF]">Company</span>
+          </h3>
+          <p id="modal-lead-title" class="text-xs text-white/50 apple-subhead"></p>
+        </div>
+        <button onclick="closeLeadModal()" class="apple-btn text-white/50 hover:text-white p-1 rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-white/70 mb-1">Subject Line</label>
+          <input type="text" id="modal-subject" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#0A84FF]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-white/70 mb-1">Email Body Copy</label>
+          <textarea id="modal-body" rows="8" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl p-3 text-xs text-white font-sans focus:outline-none focus:border-[#0A84FF] leading-relaxed"></textarea>
+        </div>
+
+        <div id="modal-hook" class="text-xs text-[#FFD60A] bg-[#FFD60A]/10 p-2.5 rounded-xl border border-[#FFD60A]/20"></div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-white/[0.08]">
+        <div class="flex space-x-2">
+          <button onclick="modalRegenerateAI()" class="apple-btn px-3.5 py-1.5 text-xs font-semibold rounded-full bg-gradient-to-r from-[#5E5CE6] to-[#BF5AF2] hover:brightness-110 text-white flex items-center gap-1.5">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>Re-write AI</span>
+          </button>
+          <button onclick="sendPreviewOfActiveLead()" class="apple-btn px-3.5 py-1.5 text-xs font-semibold rounded-full bg-white/[0.08] hover:bg-white/[0.15] text-white/90 border border-white/[0.1] flex items-center gap-1.5" title="Sends an exact copy to your own Gmail so you can review before sending to the client">
+            <i data-lucide="mail-check" class="w-3.5 h-3.5 text-[#0A84FF]"></i>
+            <span>Test Copy to My Inbox</span>
+          </button>
+          <button onclick="modalSendLeadNow()" class="apple-btn px-3.5 py-1.5 text-xs font-semibold rounded-full bg-[#30D158] hover:bg-[#28B84D] text-black flex items-center gap-1.5 shadow-md shadow-[#30D158]/25" title="Sends directly to the prospect's email right now">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+            <span>Send Now</span>
+          </button>
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="modalApproveLead()" class="apple-btn px-3.5 py-1.5 text-xs font-semibold rounded-full bg-[#64D2FF]/20 hover:bg-[#64D2FF]/30 text-[#64D2FF] border border-[#64D2FF]/30 flex items-center gap-1">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            <span>Approve Draft</span>
+          </button>
+          <button onclick="saveModalChanges()" class="apple-btn px-4 py-1.5 text-xs font-semibold rounded-full bg-[#0A84FF] hover:bg-[#0071E3] text-white">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCOUNT & CREDENTIALS SETUP MODAL (FOR YOU & FRIENDS) -->
+  <div id="account-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="apple-glass-elevated rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-b from-[#0A84FF] to-[#0058BB] flex items-center justify-center text-white border border-white/20">
+            <i data-lucide="user-cog" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white apple-display">Account & Credentials Setup</h3>
+            <p class="text-xs text-white/50 apple-subhead">Configure your personal Gmail & Groq key (or prepare for your friend)</p>
+          </div>
+        </div>
+        <button onclick="closeAccountModal()" class="apple-btn text-white/50 hover:text-white p-1 rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3.5 text-xs">
+        <!-- Name & Agency -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-white/70 mb-1">Your Name / Signature</label>
+            <input type="text" id="acc-from-name" placeholder="e.g. Benedict" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#0A84FF]">
+          </div>
+          <div>
+            <label class="block font-medium text-white/70 mb-1">Agency Brand Name</label>
+            <input type="text" id="acc-agency-name" placeholder="e.g. AutomaFlow Studio" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#0A84FF]">
+          </div>
+        </div>
+
+        <!-- Google Mail -->
+        <div>
+          <label class="block font-medium text-white/70 mb-1">Your Google / Gmail Address</label>
+          <input type="email" id="acc-email" placeholder="your-email@gmail.com" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#0A84FF]">
+        </div>
+
+        <!-- Google App Password -->
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block font-medium text-white/70">Google App Password (16 Letters)</label>
+            <a href="https://myaccount.google.com/apppasswords" target="_blank" class="text-[10px] text-[#0A84FF] hover:underline flex items-center gap-0.5">
+              <span>Get App Password</span> <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </div>
+          <input type="password" id="acc-password" placeholder="••••••••••••" class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#0A84FF]">
+          <p class="text-[10px] text-white/40 mt-1">
+            Google Account → Security → 2-Step Verification → App Passwords. (Name it "AutoMail" and paste the 16 characters).
+          </p>
+        </div>
+
+        <!-- Groq API Key -->
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block font-medium text-white/70">Groq API Key (Free 1,000 requests/day)</label>
+            <a href="https://console.groq.com/keys" target="_blank" class="text-[10px] text-[#0A84FF] hover:underline flex items-center gap-0.5">
+              <span>Get Free Key</span> <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </div>
+          <input type="password" id="acc-groq-key" placeholder="gsk_..." class="w-full bg-[#1C1C1E] border border-white/[0.1] rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#0A84FF]">
+          <p class="text-[10px] text-white/40 mt-1">
+            Powers ultra-fast LPU email personalization. Completely free, no credit card required.
+          </p>
+        </div>
+
+        <!-- Status Result Alert -->
+        <div id="acc-status-box" class="hidden rounded-xl p-3 text-xs border"></div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-white/[0.08]">
+        <button onclick="clearAccountForFriend()" class="apple-btn px-3.5 py-1.5 text-xs font-medium rounded-full bg-[#FF453A]/10 hover:bg-[#FF453A]/20 text-[#FF453A] border border-[#FF453A]/20" title="Wipes stored passwords & API keys so you can zip and share with your friend safely">
+          <i data-lucide="shield-alert" class="w-3.5 h-3.5 inline mr-1"></i>
+          <span>Clear for Sharing</span>
+        </button>
+        <div class="flex space-x-2">
+          <button onclick="closeAccountModal()" class="apple-btn px-4 py-1.5 text-xs font-medium rounded-full bg-white/[0.08] hover:bg-white/[0.14] text-white/80">
+            Cancel
+          </button>
+          <button id="btn-save-account" onclick="submitQuickSetup()" class="apple-btn px-5 py-1.5 text-xs font-semibold rounded-full bg-[#0A84FF] hover:bg-[#0071E3] text-white flex items-center gap-1.5 shadow-md shadow-[#0A84FF]/30">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            <span>Save & Connect Account</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
